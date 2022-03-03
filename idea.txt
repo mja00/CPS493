@@ -1,0 +1,1 @@
+I'll make a site where people can post 150 character long messages to the homepage. Then other people can like or dislike those posts.

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %> | Peeper</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <link rel='stylesheet' href='/bootstrap/css/bootstrap.min.css' />
+    <script src="/bootstrap/js/bootstrap.bundle.js"></script>
+  </head>
+  <body>
+    <%- include('navbar') %>
+    <div class="container text-center" id="flash-messages">
+      <ul style="list-style-type: none;">
+      <!-- Success messages -->
+      <% for (const msg in successFlash) { %>
+        <li>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <%= successFlash[msg] %>
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+        </li>
+      <%}%>
+      <!-- Info messages -->
+      <% for (const msg in infoFlash) { %>
+        <li>
+          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+              <%= infoFlash[msg] %>
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+        </li>
+      <%}%>
+      <!-- Error messages -->
+      <% for (const msg in errorFlash) { %>
+        <li>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <%= errorFlash[msg] %>
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+        </li>
+      <%}%>
+      </ul>
+    </div>

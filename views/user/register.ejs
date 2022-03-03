@@ -1,0 +1,107 @@
+<%- include('../partials/header') %>
+    <div class="container">
+        <div class="row justify-content-center mt-4">
+            <div class="col-sm-8">
+                <div class="card">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs">
+                            <li class="nav-item">
+                                <a class="nav-link" href="login">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="reigster">Register</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <form class="needs-validation" action="/user/register" method="POST" role="form" novalidate>
+                            <div class="row">
+                                <div class="col form-group">
+                                    <label for="firstName">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" placeholder="John"
+                                        name="firstName" required>
+                                    <div class="valid-feedback">
+                                        Looks good!
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Please enter your first name.
+                                    </div>
+                                </div>
+                                <div class="col form-group">
+                                    <label for="lastName">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" placeholder="Smith"
+                                        name="lastName" required>
+                                    <div class="valid-feedback">
+                                        Looks good!
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Please enter your last name.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col form-group">
+                                    <label for="username">Username</label>
+                                    <input type="text" class="form-control" id="username" placeholder="jsmith"
+                                        name="username" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a username.
+                                    </div>
+                                </div>
+                                <div class="col form-group">
+                                    <label for="birthdate">Birthdate</label>
+                                    <input type="date" class="form-control" id="birthdate" name="birthdate" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a birthdate.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col form-group">
+                                    <label for="password">Password</label>
+                                    <input type="password" class="form-control" id="password" placeholder="Password"
+                                        name="password" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a password.
+                                    </div>
+                                </div>
+                                <div class="col form-group">
+                                    <label for="confirmPassword">Confirm Password</label>
+                                    <input type="password" class="form-control" id="confirmPassword"
+                                        placeholder="Confirm Password" name="confirmPassword" required>
+                                    <div class="invalid-feedback">
+                                        Please confirm your password.
+                                    </div>
+                                </div>
+                            </div>
+                            <small id="passwordHelpBlock" class="form-text text-muted text-center row">
+                                Your password must be 8-32 characters long.
+                            </small>
+                            <button class="btn btn-success" type="submit">Register</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function () {
+            'use strict';
+            window.addEventListener('load', function () {
+                // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                var forms = document.getElementsByClassName('needs-validation');
+                // Loop over them and prevent submission
+                var validation = Array.prototype.filter.call(forms, function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (form.checkValidity() === false) {
+                            event.stopPropagation();
+                            event.preventDefault();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+
+    </script>
+    <%- include('../partials/footer') %>
