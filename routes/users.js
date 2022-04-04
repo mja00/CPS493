@@ -3,15 +3,68 @@ var router = express.Router();
 var crypto = require('crypto');
 const flash = require('connect-flash/lib/flash');
 
-var users = [
-  {
-    username: "amogus",
-    password: getHashedPassword("password"),
-    firstName: "Among",
-    lastName: "Us",
-    birthdate: "2000-04-20"
+// Our user class
+class User {
+  constructor(username, password, firstName, lastName, birthdate) {
+    this.username = username;
+    this.password = password;
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.birthdate = birthdate;
   }
-];
+
+  // Getters
+  getUsername() {
+    return this.username;
+  }
+
+  getPassword() {
+    return this.password;
+  }
+
+  getFirstName() {
+    return this.firstName;
+  }
+
+  getLastName() {
+    return this.lastName;
+  }
+
+  getFullName() { 
+    return this.firstName + ' ' + this.lastName;
+  }
+
+  getBirthdate() {
+    return this.birthdate;
+  }
+
+  // Setters
+  setUsername(username) {
+    this.username = username;
+  }
+
+  setPassword(password) {
+    this.password = password;
+  }
+
+  setFirstName(firstName) {
+    this.firstName = firstName;
+  }
+
+  setLastName(lastName) {
+    this.lastName = lastName;
+  }
+
+  setBirthdate(birthdate) {
+    this.birthdate = birthdate;
+  }
+}
+
+var users = [];
+
+let testUser = new User("test", getHashedPassword("test"), "test", "user", "2000-04-20");
+users.push(testUser);
+
 
 const authTokens = {};
 
@@ -22,6 +75,23 @@ router.get('/', function(req, res, next) {
 
 router.get('/login', function(req, res, next) {
   res.render('user/login', { title: 'Login' });
+});
+
+router.get('/logout', function(req, res, next) {
+  // Check if user is logged in
+  if (req.session.user) {
+    // Remove auth token from session
+    delete authTokens[req.session.authToken];
+    // Remove user from session
+    delete req.session.user;
+    // Destroy session
+    req.session.destroy();
+    // Redirect to login
+    res.redirect('/');
+  } else {
+    // Redirect to login page
+    res.redirect('/user/login');
+  }
 });
 
 router.post('/login', function(req, res, next) {
@@ -43,14 +113,15 @@ router.post('/login', function(req, res, next) {
     res.cookie('authToken', authToken);
 
     // Redirect to the home page
-    req.flash('success', `Welcome ${user.firstName}!`);
+    let firstName = user.getFirstName();
+    req.flash('success', `Welcome ${firstName}!`);
+    req.session.user = user;
+    req.session.loggedIn = true;
     res.redirect('/');
   } else {
     req.flash('error', 'Invalid username or password');
     res.redirect('/user/login');
   }
-
-  res.render("user/login", { title: "Login"})
 });
 
 router.get('/register', function(req, res, next) {
@@ -71,15 +142,10 @@ router.post('/register', function(req, res, next) {
     }
 
      const hashedPassword = getHashedPassword(password);
+     let tempUser = new User(username, hashedPassword, firstName, lastName, birthdate);
 
       // Add user to users array
-      users.push({
-        username,
-        password: hashedPassword,
-        firstName,
-        lastName,
-        birthdate
-      });
+      users.push(tempUser);
 
       // Flash success message and redirect to login
       req.flash('success', 'You are now registered and can log in');
