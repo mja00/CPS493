@@ -37,7 +37,8 @@ app.use(function(req, res ,next) {
   res.locals = {
     successFlash: req.flash('success'),
     errorFlash: req.flash('error'),
-    infoFlash: req.flash('info')
+    infoFlash: req.flash('info'),
+    session: req.session
   }
   next();
 });
