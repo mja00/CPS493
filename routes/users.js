@@ -14,50 +14,23 @@ class User {
   }
 
   // Getters
-  getUsername() {
-    return this.username;
-  }
-
-  getPassword() {
-    return this.password;
-  }
-
-  getFirstName() {
-    return this.firstName;
-  }
-
-  getLastName() {
-    return this.lastName;
-  }
-
-  getFullName() { 
-    return this.firstName + ' ' + this.lastName;
-  }
-
-  getBirthdate() {
-    return this.birthdate;
-  }
+  getUsername = () => this.username;
+  getPassword = () => this.password;
+  getFirstName = () => this.firstName;
+  getLastName = () => this.lastName;
+  getFullName = () => this.firstName + ' ' + this.lastName;
+  getBirthdate = () => this.birthdate;
 
   // Setters
-  setUsername(username) {
-    this.username = username;
-  }
-
-  setPassword(password) {
-    this.password = password;
-  }
-
-  setFirstName(firstName) {
+  setUsername = (username) => this.username = username;
+  setPassword = (password) => this.password = password;
+  setFirstName = (firstName) => this.firstName = firstName;
+  setLastName = (lastName) => this.lastName = lastName;
+  setFullName = (firstName, lastName) => {
     this.firstName = firstName;
-  }
-
-  setLastName(lastName) {
     this.lastName = lastName;
   }
-
-  setBirthdate(birthdate) {
-    this.birthdate = birthdate;
-  }
+  setBirthdate = (birthdate) => this.birthdate = birthdate;
 }
 
 var users = [];
@@ -100,7 +73,7 @@ router.post('/login', function(req, res, next) {
 
   // Check for the user and password
   const user = users.find(u => {
-    return u.username === username && u.password === hashedPassword;
+    return u.getUsername() === username && u.getPassword() === hashedPassword;
   });
 
   if (user) {
