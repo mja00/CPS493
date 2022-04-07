@@ -2,42 +2,7 @@ var express = require('express');
 var router = express.Router();
 var crypto = require('crypto');
 const flash = require('connect-flash/lib/flash');
-
-// Our user class
-class User {
-  constructor(username, password, firstName, lastName, birthdate) {
-    this.username = username;
-    this.password = password;
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.birthdate = birthdate;
-  }
-
-  // Getters
-  getUsername = () => this.username;
-  getPassword = () => this.password;
-  getFirstName = () => this.firstName;
-  getLastName = () => this.lastName;
-  getFullName = () => this.firstName + ' ' + this.lastName;
-  getBirthdate = () => this.birthdate;
-
-  // Setters
-  setUsername = (username) => this.username = username;
-  setPassword = (password) => this.password = password;
-  setFirstName = (firstName) => this.firstName = firstName;
-  setLastName = (lastName) => this.lastName = lastName;
-  setFullName = (firstName, lastName) => {
-    this.firstName = firstName;
-    this.lastName = lastName;
-  }
-  setBirthdate = (birthdate) => this.birthdate = birthdate;
-}
-
-var users = [];
-
-let testUser = new User("test", getHashedPassword("test"), "test", "user", "2000-04-20");
-users.push(testUser);
-
+const db = require('./queries');
 
 const authTokens = {};
 
@@ -72,29 +37,32 @@ router.post('/login', function(req, res, next) {
   const hashedPassword = getHashedPassword(password);
 
   // Check for the user and password
-  const user = users.find(u => {
-    return u.getUsername() === username && u.getPassword() === hashedPassword;
+  db.getUserByUsernameAndPassword(username, hashedPassword).then(user => {
+    // Check if user exists
+    if (user) {
+      const authToken = generateAuthToken();
+
+      // Store the token in the array
+      authTokens[authToken] = user;
+
+      // Store the cookie
+      res.cookie('authToken', authToken);
+
+      // Redirect to the home page
+      let firstName = user.getFirstName();
+      req.flash('success', `Welcome ${firstName}!`);
+      req.session.user = user;
+      req.session.loggedIn = true;
+      res.redirect('/');
+    } else {
+      req.flash('error', 'Invalid username or password');
+      res.redirect('/user/login');
+    } 
+  }).catch(error => {
+    req.flash('error', error)
+    res.redirect('/user/login');
   });
 
-  if (user) {
-    const authToken = generateAuthToken();
-
-    // Store the token in the array
-    authTokens[authToken] = user;
-
-    // Store the cookie
-    res.cookie('authToken', authToken);
-
-    // Redirect to the home page
-    let firstName = user.getFirstName();
-    req.flash('success', `Welcome ${firstName}!`);
-    req.session.user = user;
-    req.session.loggedIn = true;
-    res.redirect('/');
-  } else {
-    req.flash('error', 'Invalid username or password');
-    res.redirect('/user/login');
-  }
 });
 
 router.get('/register', function(req, res, next) {
@@ -115,14 +83,15 @@ router.post('/register', function(req, res, next) {
     }
 
      const hashedPassword = getHashedPassword(password);
-     let tempUser = new User(username, hashedPassword, firstName, lastName, birthdate);
+     let tempUser = new db.User(username, hashedPassword, firstName, lastName, birthdate);
 
-      // Add user to users array
-      users.push(tempUser);
+      // Insert into database
+      db.createNewUser(tempUser).then(user => {
+        // Flash success message and redirect to login
+        req.flash('success', 'You are now registered and can log in');
+        res.redirect('/user/login');
+      });
 
-      // Flash success message and redirect to login
-      req.flash('success', 'You are now registered and can log in');
-      res.redirect('/user/login');
 
   } else {
     // Flash a message and reditect to register page
