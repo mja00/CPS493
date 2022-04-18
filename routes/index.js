@@ -3,9 +3,12 @@ var router = express.Router();
 const db = require('./queries')
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  db.getUserByID(1).then(user => {
-    res.render('index', { title: 'Home' });
+router.get('/', async function(req, res, next) {
+    // Get all the peeps
+  let peeps = await db.getAllPeepsForDisplay();
+  res.render('index', {
+    title: 'Home' ,
+    peeps: peeps,
   });
 });
 

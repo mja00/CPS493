@@ -1,15 +1,39 @@
 <%- include('partials/header') %>
-    <div class="container text-center mt-4">
-        <h3>Welcome to Peeper!</h3>
-        <p>You'll want to either sign up or log in. You can do that from the navbar or using the buttons below!</p>
-        <p>Eventually this'll display all the Peeps that people have posted!</p>
-        <% if (session.loggedIn) { %>
-            <h4>You're logged in!</h4>
-        <% } else { %>
-            <div class="container" role="group" aria-label="Login & Register">
-                <a href="/user/login" class="btn btn-primary btn-lg">Login</a>
-                <a href="/user/register" class="btn btn-success btn-lg">Register</a>
+<% if (!session.loggedIn) {%>
+<div class="container mt-4">
+    <h3>Welcome to Peeper!</h3>
+    <p>You'll want to either sign up or log in. You can do that from the navbar or using the buttons below!</p>
+        <div class="container" role="group" aria-label="Login & Register">
+            <a href="/user/login" class="btn btn-primary btn-lg">Login</a>
+            <a href="/user/register" class="btn btn-success btn-lg">Register</a>
+        </div>
+</div>
+<% }%>
+<div class="container-fluid">
+    <!-- Display all the peeps -->
+    <% if (peeps.length > 0) { %>
+        <div class="row mt-2">
+            <div class="col"></div>
+            <div class="col">
+                <h4 class="text-center">Peeps</h4>
+                <% peeps.forEach(peep => { %>
+                    <div class="card mb-3" id="peep-<%= peep.id %>">
+                        <div class="card-header">
+                            <h5><%= peep.author.username %></h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="peepContent">
+                                <%= peep.message %>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">Written <%= peep.getTimeDifference(); %></small>
+                        </div>
+                    </div>
+                <% }); %>
             </div>
-        <% } %>
-    </div>
+            <div class="col"></div>
+        </div>
+    <% } %>
+</div>
 <%- include('partials/footer') %>
