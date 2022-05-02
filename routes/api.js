@@ -3,6 +3,8 @@ var router = express.Router();
 const db = require('./queries')
 
 
+/* User endpoints */
+
 router.get('/user/:id', async function(req, res, next) {
   const user = await db.getUserByID(req.params.id)
   res.json(user.getAsJSON())
@@ -68,6 +70,23 @@ router.delete('/user/:id', async function(req, res, next) {
     res.json({
         message: 'User deleted successfully'
     })
+});
+
+/* Peep endpoints */
+
+router.post('/peep', async function(req, res, next) {
+    const userID = req.session.user.id;
+    const body = req.body;
+    const message = body.peep;
+    db.createNewPeep(userID, message).then(function() {
+        res.json({
+            message: 'Peep created successfully'
+        })
+    }).catch(function(err) {
+        res.status(400).json({
+            message: err
+        })
+    });
 });
 
 module.exports = router;

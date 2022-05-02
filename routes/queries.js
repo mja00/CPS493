@@ -132,7 +132,7 @@ const getUserByUsernameAndPassword = (username, password) => {
                 // Create a new user object
                 let user = new User(resultsObj.username, resultsObj.password, resultsObj.firstname, resultsObj.lastname, resultsObj.birthdate, resultsObj.id);
                 // Resolve the user object
-                resolve(user.getAsJSON());
+                resolve(user);
             } else {
                 // Reject the promise
                 reject("No user found");
@@ -158,6 +158,26 @@ const getUserByUsername = (username) => {
             } else {
                 // Reject the promise
                 reject("No user found");
+            }
+        });
+    });
+}
+
+const doesUsernameExist = (username) => {
+    return new Promise((resolve, reject) => {
+        pool.query('SELECT * FROM users WHERE username = $1', [username], (error, results) => {
+            if (error) {
+                reject("Error getting user")
+            }
+            // Convert the results to a user object
+            let resultsObj = results.rows[0];
+            // Check to see if the user exists
+            if (resultsObj) {
+                // Resolve the user object
+                resolve(true);
+            } else {
+                // Reject the promise
+                resolve(false);
             }
         });
     });
@@ -241,6 +261,19 @@ const getAllPeepsForDisplay = async () => {
     return peeps;
 }
 
+
+const createNewPeep = async (user_id, message) => {
+    console.log(user_id, message);
+    return new Promise((resolve, reject) => {
+        pool.query('INSERT INTO peeps (user_id, message) VALUES ($1, $2) RETURNING *', [user_id, message], (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            resolve(results.rows[0])
+        });
+    });
+}
+
 module.exports = {
     User,
     Peep,
@@ -250,5 +283,7 @@ module.exports = {
     getUserByUsername,
     getAllPeepsForDisplay,
     updateUser,
-    deleteUserByID
+    deleteUserByID,
+    doesUsernameExist,
+    createNewPeep
 }

@@ -42,7 +42,7 @@
                 <% if (!session.loggedIn) { %>
                     <p>You must be logged in to peep.</p>
                 <% } else { %>
-                    <form action="/peep" method="POST" id="peepForm">
+                    <form action="#" method="POST" id="peepForm">
                         <div class="form-group">
                             <textarea class="form-control" id="peep" name="peep" rows="3"></textarea>
                         </div>
@@ -51,10 +51,24 @@
             </div>
             <div class="modal-footer">
                 <% if (session.loggedIn) { %>
-                    <button type="button" class="btn btn-primary" form="peepForm">Post Peep</button>
+                    <button type="submit" class="btn btn-primary" form="peepForm">Post Peep</button>
                 <% } %>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
+<script>
+    // Hook into the peepForm form submit event
+    $('#peepForm').submit(function(e) {
+        // Prevent the form from submitting
+        e.preventDefault();
+        // Get the peep text
+        let peep = $('#peep').val();
+        // Make a post request to the peeps endpoint
+        $.post('/api/peep', { peep: peep }, function(data) {
+            // Reload the page on success
+            location.reload();
+        });
+    });
+</script>
