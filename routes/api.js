@@ -75,12 +75,42 @@ router.delete('/user/:id', async function(req, res, next) {
 /* Peep endpoints */
 
 router.post('/peep', async function(req, res, next) {
+    if (!req.session.user) {
+        res.json({
+            message: 'You must be logged in to peep'
+        })
+        return;
+    }
     const userID = req.session.user.id;
     const body = req.body;
     const message = body.peep;
     db.createNewPeep(userID, message).then(function() {
         res.json({
             message: 'Peep created successfully'
+        })
+    }).catch(function(err) {
+        res.status(400).json({
+            message: err
+        })
+    });
+});
+
+router.get('/peep/:id', async function(req, res, next) {
+    const peepID = req.params.id;
+    db.getPeepByID(peepID).then(function(peep) {
+        res.json(peep)
+    }).catch(function(err) {
+        res.status(404).json({
+            message: err
+        })
+    });
+});
+
+router.delete('/peep/:id', async function(req, res, next) {
+    const peepID = req.params.id;
+    db.deletePeepByID(peepID).then(function() {
+        res.json({
+            message: 'Peep deleted successfully'
         })
     }).catch(function(err) {
         res.status(400).json({

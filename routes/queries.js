@@ -79,7 +79,6 @@ const deleteUserByID = (userID) => {
             if (error) {
                 reject(error)
             }
-            console.log(results);
             // Check to see if the user exists
             if (results.rowCount > 0) {
                 // Resolve the user object
@@ -218,8 +217,19 @@ class Peep {
     setUserID = (userID) => this.userID = userID;
     setMessage = (message) => this.message = message;
 
+    getLikes = async () => {
+        return await getLikesForPeep(this.getUserID());
+    }
+
+    getLikesCount = async () => {
+        let likes = await this.getLikes();
+        return likes.length;
+    }
+
+
     getAuthor = async () => {
-        return await getUserByID(this.userID);
+        let user = await getUserByID(this.userID);
+        return user.getAsJSON();
     }
 
     getTimeDifference = () => {
@@ -256,6 +266,7 @@ const getAllPeepsForDisplay = async () => {
     for (let row of rows.rows) {
         let peep = new Peep(row.user_id, row.message, row.created_at);
         peep.author = await peep.getAuthor();
+        peep.likesCount = await peep.getLikesCount();
         peeps.push(peep);
     }
     return peeps;
@@ -274,6 +285,139 @@ const createNewPeep = async (user_id, message) => {
     });
 }
 
+const getPeepByID = async (id) => {
+    return new Promise((resolve, reject) => {
+        pool.query('SELECT * FROM peeps WHERE id = $1', [id], async (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            let resultsObj = results.rows[0];
+            if (resultsObj) {
+                let peep = new Peep(resultsObj.user_id, resultsObj.message, resultsObj.created_at);
+                peep.author = await peep.getAuthor();
+                peep.likes = await peep.getLikes();
+                peep.likesCount = await peep.getLikesCount();
+                resolve(peep);
+            } else {
+                reject('Peep not found');
+            }
+        });
+    });
+}
+
+const deletePeepByID = async (id) => {
+    return new Promise((resolve, reject) => {
+        pool.query('DELETE FROM peeps WHERE id = $1', [id], (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            // Check to see if the user exists
+            if (results.rowCount > 0) {
+                // Resolve the user object
+                resolve(results);
+            } else {
+                // Reject the promise
+                reject("No peep found");
+            }
+        });
+    });
+}
+
+// Our likes class
+class Like {
+    constructor(id, peep_id, user_id) {
+        this.id = id;
+        this.peep_id = peep_id;
+        this.user_id = user_id;
+    }
+
+    // Getters
+    getId() {
+        return this.id;
+    }
+    getPeepId() {
+        return this.peep_id;
+    }
+    getUserId() {
+        return this.user_id;
+    }
+    getPeep() {
+        return getPeepByID(this.peep_id);
+    }
+    getLiker() {
+        return getUserByID(this.user_id);
+    }
+
+    // Setters
+    setId(id) {
+        this.id = id;
+    }
+    setPeepId(peep_id) {
+        this.peep_id = peep_id;
+    }
+    setUserId(user_id) {
+        this.user_id = user_id;
+    }
+}
+
+const getLikeByID = (id) => {
+    return new Promise((resolve, reject) => {
+        pool.query('SELECT * FROM likes WHERE id = $1', [id], (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            // Check to see if the user exists
+            if (results.rowCount > 0) {
+                // Resolve the user object
+                resolve(results.rows[0]);
+            } else {
+                // Reject the promise
+                reject("No like found");
+            }
+        });
+    });
+}
+
+const likePeep = async (user_id, peep_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query('INSERT INTO likes (user_id, peep_id) VALUES ($1, $2) RETURNING *', [user_id, peep_id], (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            resolve(results.rows[0])
+        });
+    });
+}
+
+const deleteLikeByID = async (id) => {
+    return new Promise((resolve, reject) => {
+        pool.query('DELETE FROM likes WHERE id = $1', [id], (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            // Check to see if the like exists
+            if (results.rowCount > 0) {
+                // Resolve the like object
+                resolve(results);
+            } else {
+                // Reject the promise
+                reject("No like found");
+            }
+        });
+    });
+}
+
+const getLikesForPeep = async (peep_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query('SELECT * FROM likes WHERE peep_id = $1', [peep_id], (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            resolve(results.rows);
+        });
+    });
+}
+
 module.exports = {
     User,
     Peep,
@@ -285,5 +429,7 @@ module.exports = {
     updateUser,
     deleteUserByID,
     doesUsernameExist,
-    createNewPeep
+    createNewPeep,
+    getPeepByID,
+    deletePeepByID
 }

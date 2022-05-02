@@ -27,7 +27,11 @@
                             </div>
                         </div>
                         <div class="card-footer">
-                            <small class="text-muted">Written <%= peep.getTimeDifference(); %></small>
+                            <small class="text-muted">Written <%= peep.getTimeDifference(); %> | <%= peep.likesCount%> likes</small>
+                            <div class="btn-group float-right" role="group" aria-label="Basic example">
+                                <button class="btn btn-success btn-sm" id="like-peep-<%= peep.id%>" data-toggle="tooltip" data-placement="top" title="Like Peep"><i class="fa-solid fa-thumbs-up"></i></button>
+                                <button class="btn btn-info btn-sm" id="reply-peep-<%= peep.id%>" data-toggle="tooltip" data-placement="top" title="Reply To Peep"><i class="fa-solid fa-message"></i></button>
+                            </div>
                         </div>
                     </div>
                 <% }); %>
