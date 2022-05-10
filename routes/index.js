@@ -5,9 +5,9 @@ const db = require('./queries')
 /* GET home page. */
 router.get('/', async function (req, res, next) {
     // Ensure the DB is setup properly
-    db.checkIfDbSetup().then(() => {
+    db.checkIfDbSetup().then(async () => {
         // Get all the peeps
-        let peeps = db.getAllPeepsForDisplay().catch(err => {
+        let peeps = await db.getAllPeepsForDisplay().catch(err => {
             console.log(err)
         })
         // Check if there is currently a logged in user
@@ -15,10 +15,10 @@ router.get('/', async function (req, res, next) {
         // If logged in, get their likes as a list of IDs
         let likes = [];
         if (loggedIn) {
-            let user = db.getUserByID(req.session.user.id).catch(err => {
+            let user = await db.getUserByID(req.session.user.id).catch(err => {
                 console.log(err)
             });
-            likes = user.getLikesAsListOfIds();
+            likes = await user.getLikesAsListOfIds();
         }
         res.render('index', {
             title: 'Home',

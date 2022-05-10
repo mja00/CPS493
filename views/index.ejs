@@ -9,6 +9,38 @@
         </div>
 </div>
 <% }%>
+<!-- New reply Modal -->
+<div class="modal" tabindex="-1" role="dialog" id="newReplyModal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reply To Peep</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <% if (!session.loggedIn) { %>
+                    <p>You must be logged in to reply.</p>
+                <% } else { %>
+                    <form action="#" method="POST" id="replyForm">
+                        <div class="form-group">
+                            <textarea class="form-control" id="reply" name="reply" rows="3"></textarea>
+                        </div>
+                        <!-- Hidden input for peep id -->
+                        <input type="hidden" id="peepId" name="peepId" value="">
+                    </form>
+                <% } %>
+            </div>
+            <div class="modal-footer">
+                <% if (session.loggedIn) { %>
+                    <button type="submit" class="btn btn-primary" form="replyForm">Post Reply</button>
+                <% } %>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="container-fluid">
     <!-- Display all the peeps -->
     <% if (peeps.length > 0) { %>
@@ -34,7 +66,7 @@
                                 <% } else { %>
                                 <button class="btn btn-success btn-sm" id="like-peep-<%= peep.id%>"  onclick="likePeep(<%= peep.id %>)" data-toggle="tooltip" data-placement="top" title="Like Peep" <% if (!session.loggedIn) { %> disabled <% } %>><i class="fa-solid fa-thumbs-up"></i></button>
                                 <% } %>
-                                <button class="btn btn-info btn-sm" id="reply-peep-<%= peep.id%>" data-toggle="tooltip" data-placement="top" title="Reply To Peep" <% if (!session.loggedIn) { %> disabled <% } %>><i class="fa-solid fa-message"></i></button>
+                                <button class="btn btn-info btn-sm" id="reply-peep-<%= peep.id%>" onclick="replyPeep(<%= peep.id %>)" data-toggle="tooltip" data-placement="top" title="Reply To Peep" <% if (!session.loggedIn) { %> disabled <% } %>><i class="fa-solid fa-message"></i></button>
                             </div>
                         </div>
                     </div>
@@ -111,4 +143,41 @@
             }
         });
     }
+
+    function replyPeep(peepId) {
+        let replyModal = $('#newReplyModal');
+        // Set the peep ID of the peepId input
+        $('#newReplyModal #peepId').val(peepId);
+        replyModal.modal('show');
+    }
+
+    $(document).ready(function() {
+        // Hook into the replyForm submit event
+        $('#replyForm').submit(function(event) {
+            event.preventDefault();
+            // Get the peep ID
+            let peepId = $('#newReplyModal #peepId').val();
+            // Get the reply text
+            let replyText = $('#newReplyModal #reply').val();
+            // Send the reply
+            $.ajax({
+                url: '/api/peep/' + peepId + '/reply',
+                type: 'POST',
+                data: {
+                    reply: replyText
+                },
+                success: function(data) {
+                    console.log(data);
+                    // Close the modal
+                    $('#newReplyModal').modal('hide');
+                    // Clear the reply text
+                    $('#newReplyModal #reply').val('');
+
+                },
+                error: function(data) {
+                    console.log(data);
+                }
+            });
+        });
+    });
 </script>

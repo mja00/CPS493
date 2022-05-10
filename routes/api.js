@@ -186,5 +186,63 @@ router.delete('/peep/:id/like', async function(req, res, next) {
     }
 });
 
+// Replies
+
+router.get('/peep/:id/replies', async function(req, res, next) {
+    const peepID = req.params.id;
+    let replies = await db.getRepliesForPeep(peepID);
+    res.json({
+        replies: replies,
+    });
+});
+
+router.get('/reply/:id', async function(req, res, next) {
+    const replyID = req.params.id;
+    db.getReplyByID(replyID).then(function(reply) {
+        res.json(reply)
+    }).catch(function(err) {
+        res.status(404).json({
+            message: err
+        });
+    });
+});
+
+router.post('/peep/:id/reply', async function(req, res, next) {
+    if (!req.session.user) {
+        res.json({
+            message: 'You must be logged in to reply to a peep'
+        });
+    } else {
+        const userID = req.session.user.id;
+        const peepID = req.params.id;
+        const reply = req.body.reply;
+        db.addReply(userID, peepID, reply).then(function() {
+            res.json({
+                message: 'Reply added successfully'
+            });
+        });
+    }
+});
+
+router.delete('/reply/:id', async function(req, res, next) {
+    if (!req.session.user) {
+        res.json({
+            message: 'You must be logged in to delete a reply'
+        });
+    } else {
+        //const userID = req.session.user.id;
+        const replyID = req.params.id;
+        db.deleteReplyByID(replyID).then(function() {
+            res.json({
+                message: 'Reply deleted successfully'
+            });
+        }).catch(function(err) {
+            res.status(400).json({
+                message: err
+            });
+        });
+    }
+});
+
 
 module.exports = router;

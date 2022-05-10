@@ -11,7 +11,7 @@ const dbUser = 'postgres'
 const dbPassword = 'postgres'
 const dbHost = 'localhost'
 const dbPort = 5432
-const dbName = 'web-dev-test'
+const dbName = 'web-dev-project'
 
 const pool = new Pool({
     user: dbUser,
@@ -26,10 +26,8 @@ const checkIfDbSetup = async () => {
     const query = 'SELECT * FROM users'
     pool.query(query, (err, res) => {
         if (err) {
-            console.log('Database is not setup yet')
             setUpDb();
         }
-        console.log('Database is setup')
     });
 }
 
@@ -63,6 +61,16 @@ const setUpDb = async () => {
             id SERIAL NOT NULL PRIMARY KEY,
             peep_id integer NOT NULL,
             user_id integer
+        );
+    `)
+
+    // Create replies table
+    await client.query(`
+        CREATE TABLE IF NOT EXISTS replies (
+            id SERIAL NOT NULL PRIMARY KEY,
+            peep_id integer NOT NULL,
+            user_id integer NOT NULL,
+            message text NOT NULL
         );
     `)
 
@@ -519,9 +527,85 @@ const deleteLikeByUserForPeep = async (user_id, peep_id) => {
     });
 }
 
+// Our replies class
+class Reply {
+    constructor(id, peep_id, user_id, message) {
+        this.id = id;
+        this.peep_id = peep_id;
+        this.user_id = user_id;
+        this.message = message;
+    }
+
+    // Getters
+    getId = () => this.id;
+    getPeepId = () => this.peep_id;
+    getUserId = () => this.user_id;
+    getMessage = () => this.message;
+
+    // Setters
+    setId = (id) => this.id = id;
+    setPeepId = (peep_id) => this.peep_id = peep_id;
+    setUserId = (user_id) => this.user_id = user_id;
+    setMessage = (message) => this.message = message;
+}
+
+const getReplyByID = async (id) => {
+    return new Promise((resolve, reject) => {
+        pool.query('SELECT * FROM replies WHERE id = $1', [id], (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            // Check to see if the reply exists
+            if (results.rowCount > 0) {
+                // Resolve the reply object
+                resolve(results.rows[0]);
+            } else {
+                // Reject the promise
+                reject("No reply found");
+            }
+        });
+    });
+}
+
+const getRepliesForPeep = async (peep_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query('SELECT * FROM replies WHERE peep_id = $1', [peep_id], (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            resolve(results.rows);
+        });
+    });
+}
+
+const addReply = async (peep_id, user_id, message) => {
+    return new Promise((resolve, reject) => {
+        pool.query('INSERT INTO replies (peep_id, user_id, message) VALUES ($1, $2, $3) RETURNING *', [peep_id, user_id, message], (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            resolve(results.rows[0]);
+        });
+    });
+}
+
+const deleteReplyByID = async (id) => {
+    return new Promise((resolve, reject) => {
+        pool.query('DELETE FROM replies WHERE id = $1', [id], (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            resolve(results);
+        });
+    });
+}
+
+
 module.exports = {
     User,
     Peep,
+    Like,
+    Reply,
     getUserByID,
     createNewUser,
     getUserByUsernameAndPassword,
@@ -540,5 +624,9 @@ module.exports = {
     hasUserLikedPeep,
     deleteLikeByUserForPeep,
     setUpDb,
-    checkIfDbSetup
+    checkIfDbSetup,
+    getRepliesForPeep,
+    addReply,
+    getReplyByID,
+    deleteReplyByID
 }
