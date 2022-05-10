@@ -2,6 +2,24 @@
 
 ### Totally not like the *other* bird related social media platform.
 
+## Table Of Contents
+- [What is Peeper?](#what-is-peeper)
+- [What isn't Peeper?](#what-isnt-peeper)
+- [What is Peeper missing?](#what-is-peeper-missing)
+- [What will Peeper have in the future?](#what-will-peeper-have-in-the-future)
+- [Current Bugs and Issues](#current-bugs-and-issues)
+- [Technologies Used](#technologies-used)
+  - [Front-End](#front-end)
+  - [Back-End](#back-end)
+  - [Development Environment](#development-environment)
+- [ERD Diagram](#erd-diagram)
+  - [User Table](#user-table)
+  - [Peep Table](#peep-table)
+  - [Reply Table](#reply-table)
+  - [Like Table](#like-table)
+- [Installation](#installation)
+- [Screenshots](#screenshots)
+
 ### What is Peeper?
 
 Peeper is a social media platform written in JavaScript that allows you to create Peeps(posts), likes Peeps and reply to
@@ -100,25 +118,25 @@ This table contains all the users that have registered with Peeper.
 
 This table contains all the Peeps that have been posted.
 
-| Column     | Type         | Description                     |
-|------------|--------------|---------------------------------|
-| id         | integer      | Primary Key                     |
-| user_id    | integer      | Foreign Key                     |
-| message    | varchar(255) | The message in the Peep         |
-| created_at | timestamp    | The time the Peep was created   |
-| updated_at | timestamp    | The time the Peep was updated   |
+| Column     | Type      | Description                     |
+|------------|-----------|---------------------------------|
+| id         | integer   | Primary Key                     |
+| user_id    | integer   | Foreign Key                     |
+| message    | text      | The message in the Peep         |
+| created_at | timestamp | The time the Peep was created   |
+| updated_at | timestamp | The time the Peep was updated   |
 
 ### Reply Table
 
 This table contains all the replies to Peeps. This is a one-to-many relationship.
 With one row being a single reply to a single Peep.
 
-| Column     | Type         | Description                     |
-|------------|--------------|---------------------------------|
-| id         | integer      | Primary Key                     |
-| peep_id    | integer      | Foreign Key                     |
-| user_id    | integer      | Foreign Key                     |
-| message    | varchar(255) | The message in the reply        |
+| Column     | Type    | Description                     |
+|------------|---------|---------------------------------|
+| id         | integer | Primary Key                     |
+| peep_id    | integer | Foreign Key                     |
+| user_id    | integer | Foreign Key                     |
+| message    | text    | The message in the reply        |
 
 ### Like Table
 
@@ -134,6 +152,8 @@ With one row being a single like to a single Peep.
 --- 
 
 ## Installation
+
+
 
 ---
 
