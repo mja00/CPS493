@@ -48,6 +48,22 @@ class User {
             birthdate: this.birthdate
         }
     }
+
+    getLikes = () => {
+        return new Promise((resolve, reject) => {
+            pool.query('SELECT * FROM likes WHERE user_id = $1', [this.id], (err, res) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(res.rows);
+            });
+        });
+    }
+
+    getLikesAsListOfIds = async () => {
+        const likesList = await this.getLikes();
+        return likesList.map(like => like.peep_id);
+    }
 }
 
 
@@ -203,10 +219,11 @@ const updateUser = (user) => {
 // Our Peep class
 class Peep {
     // Constructor
-    constructor(userID, message, createdAt) {
+    constructor(userID, message, createdAt, id) {
         this.userID = userID;
         this.message = message;
         this.createdAt = new Date(createdAt);
+        this.id = id;
     }
 
     // Getters
@@ -218,7 +235,7 @@ class Peep {
     setMessage = (message) => this.message = message;
 
     getLikes = async () => {
-        return await getLikesForPeep(this.getUserID());
+        return await getLikesForPeep(this.id);
     }
 
     getLikesCount = async () => {
@@ -262,9 +279,9 @@ class Peep {
 
 const getAllPeepsForDisplay = async () => {
     let peeps = [];
-    let rows = await pool.query('SELECT * FROM peeps');
+    let rows = await pool.query('SELECT * FROM peeps ORDER BY created_at DESC');
     for (let row of rows.rows) {
-        let peep = new Peep(row.user_id, row.message, row.created_at);
+        let peep = new Peep(row.user_id, row.message, row.created_at, row.id);
         peep.author = await peep.getAuthor();
         peep.likesCount = await peep.getLikesCount();
         peeps.push(peep);
@@ -293,7 +310,7 @@ const getPeepByID = async (id) => {
             }
             let resultsObj = results.rows[0];
             if (resultsObj) {
-                let peep = new Peep(resultsObj.user_id, resultsObj.message, resultsObj.created_at);
+                let peep = new Peep(resultsObj.user_id, resultsObj.message, resultsObj.created_at, resultsObj.id);
                 peep.author = await peep.getAuthor();
                 peep.likes = await peep.getLikes();
                 peep.likesCount = await peep.getLikesCount();
@@ -418,6 +435,28 @@ const getLikesForPeep = async (peep_id) => {
     });
 }
 
+const hasUserLikedPeep = async (user_id, peep_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query('SELECT * FROM likes WHERE user_id = $1 AND peep_id = $2', [user_id, peep_id], (error, results) => {
+           if (error) {
+               reject(error)
+           }
+           resolve(results.rowCount > 0);
+        });
+    });
+}
+
+const deleteLikeByUserForPeep = async (user_id, peep_id) => {
+    return new Promise((resolve, reject) => {
+       pool.query('DELETE FROM likes WHERE user_id = $1 AND peep_id = $2', [user_id, peep_id], (error, results) => {
+           if (error) {
+               reject(error)
+           }
+           resolve(results);
+       });
+    });
+}
+
 module.exports = {
     User,
     Peep,
@@ -431,5 +470,11 @@ module.exports = {
     doesUsernameExist,
     createNewPeep,
     getPeepByID,
-    deletePeepByID
+    deletePeepByID,
+    getLikesForPeep,
+    likePeep,
+    deleteLikeByID,
+    getLikeByID,
+    hasUserLikedPeep,
+    deleteLikeByUserForPeep
 }

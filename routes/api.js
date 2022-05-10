@@ -119,4 +119,72 @@ router.delete('/peep/:id', async function(req, res, next) {
     });
 });
 
+// Peep Likes Endpoints
+
+router.get('/peep/:id/likes', async function(req, res, next) {
+    const peepID = req.params.id;
+    let likes = await db.getLikesForPeep(peepID);
+    res.json({
+        likes: likes,
+        count: likes.length
+    });
+});
+
+router.post('/peep/:id/like', async function(req, res, next) {
+    if (!req.session.user) {
+        res.json({
+            message: 'You must be logged in to like a peep'
+        });
+    } else {
+        const userID = req.session.user.id;
+        const peepID = req.params.id;
+        // Check if user has already liked peep
+        let hasLiked = await db.hasUserLikedPeep(userID, peepID);
+        if (hasLiked) {
+            res.json({
+                message: 'You have already liked this peep'
+            });
+            return;
+        }
+        db.likePeep(userID, peepID).then(function() {
+            res.json({
+                message: 'Peep liked successfully'
+            })
+        }).catch(function(err) {
+            res.status(400).json({
+                message: err
+            });
+        });
+    }
+});
+
+router.delete('/peep/:id/like', async function(req, res, next) {
+    if (!req.session.user) {
+        res.json({
+            message: 'You must be logged in to unlike a peep'
+        });
+    } else {
+        const userID = req.session.user.id;
+        const peepID = req.params.id;
+        // Check if user has already liked peep
+        let hasLiked = await db.hasUserLikedPeep(userID, peepID);
+        if (!hasLiked) {
+            res.json({
+                message: 'You have not liked this peep'
+            });
+        } else {
+            db.deleteLikeByUserForPeep(userID, peepID).then(function() {
+                res.json({
+                    message: 'Peep unliked successfully'
+                });
+            }).catch(function(err) {
+                res.status(400).json({
+                    message: err
+                });
+            });
+        }
+    }
+});
+
+
 module.exports = router;

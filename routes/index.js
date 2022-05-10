@@ -8,9 +8,20 @@ router.get('/', async function(req, res, next) {
   let peeps = await db.getAllPeepsForDisplay().catch(err => {
     console.log(err)
   })
+  // Check if there is currently a logged in user
+  const loggedIn = req.session.loggedIn;
+  // If logged in, get their likes as a list of IDs
+  let likes = [];
+  if (loggedIn) {
+    let user = await db.getUserByID(req.session.user.id).catch(err => {
+      console.log(err)
+    });
+    likes = await user.getLikesAsListOfIds();
+  }
   res.render('index', {
     title: 'Home' ,
     peeps: peeps,
+    likes: likes,
   });
 });
 

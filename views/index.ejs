@@ -29,8 +29,12 @@
                         <div class="card-footer">
                             <small class="text-muted">Written <%= peep.getTimeDifference(); %> | <%= peep.likesCount%> likes</small>
                             <div class="btn-group float-right" role="group" aria-label="Basic example">
-                                <button class="btn btn-success btn-sm" id="like-peep-<%= peep.id%>" data-toggle="tooltip" data-placement="top" title="Like Peep"><i class="fa-solid fa-thumbs-up"></i></button>
-                                <button class="btn btn-info btn-sm" id="reply-peep-<%= peep.id%>" data-toggle="tooltip" data-placement="top" title="Reply To Peep"><i class="fa-solid fa-message"></i></button>
+                                <% if (likes.includes(peep.id)) { %>
+                                    <button class="btn btn-danger btn-sm" id="unlike-peep-<%= peep.id%>"  onclick="unlikePeep(<%= peep.id %>)" data-toggle="tooltip" data-placement="top" title="Unlike Peep" <% if (!session.loggedIn) { %> disabled <% } %>><i class="fa-solid fa-thumbs-down"></i></button>
+                                <% } else { %>
+                                <button class="btn btn-success btn-sm" id="like-peep-<%= peep.id%>"  onclick="likePeep(<%= peep.id %>)" data-toggle="tooltip" data-placement="top" title="Like Peep" <% if (!session.loggedIn) { %> disabled <% } %>><i class="fa-solid fa-thumbs-up"></i></button>
+                                <% } %>
+                                <button class="btn btn-info btn-sm" id="reply-peep-<%= peep.id%>" data-toggle="tooltip" data-placement="top" title="Reply To Peep" <% if (!session.loggedIn) { %> disabled <% } %>><i class="fa-solid fa-message"></i></button>
                             </div>
                         </div>
                     </div>
@@ -41,3 +45,70 @@
     <% } %>
 </div>
 <%- include('partials/footer') %>
+<script>
+    function likePeep(peepId) {
+        let button = $('#like-peep-' + peepId);
+        $.ajax({
+            url: '/api/peep/' + peepId + '/like',
+            type: 'POST',
+            success: function(data) {
+                // Flip the button to the unlike button
+                button.attr('onclick', 'unlikePeep(' + peepId + ')');
+                button.attr('title', 'Unlike Peep');
+                button.removeClass('btn-success');
+                button.addClass('btn-danger');
+                button.html('<i class="fa-solid fa-thumbs-down"></i>');
+                // Update the likes count
+                let footerString = $('#peep-' + peepId + ' .card-footer .text-muted');
+                let likesCount = footerString.html();
+                let likesCountString = likesCount.split(' | ');
+                let likesCountArray = likesCountString[1].split(' ');
+                let newLikesCount = parseInt(likesCountArray[0]) + 1;
+                likesCountString[1] = newLikesCount + ' likes';
+                likesCountString = likesCountString.join(' | ');
+                footerString.html(likesCountString);
+                // Update the element ID
+                button.attr('id', 'unlike-peep-' + peepId);
+                // Update the tooltip
+                button.attr('data-original-title', 'Unlike Peep');
+                button.tooltip('show');
+            },
+            error: function(data) {
+                console.log(data);
+            }
+        })
+    }
+
+    function unlikePeep(peepId) {
+        let button = $('#unlike-peep-' + peepId);
+        $.ajax({
+            url: '/api/peep/' + peepId + '/like',
+            type: 'DELETE',
+            success: function(data) {
+                // Flip the button to the like button
+                button.attr('onclick', 'likePeep(' + peepId + ')');
+                button.attr('title', 'Like Peep');
+                button.removeClass('btn-danger');
+                button.addClass('btn-success');
+                button.html('<i class="fa-solid fa-thumbs-up"></i>');
+                // Update the likes count
+                let footerString = $('#peep-' + peepId + ' .card-footer .text-muted');
+                let likesCount = footerString.html();
+                let likesCountString = likesCount.split(' | ');
+                let likesCountArray = likesCountString[1].split(' ');
+                let newLikesCount = parseInt(likesCountArray[0]) - 1;
+                likesCountString[1] = newLikesCount + ' likes';
+                likesCountString = likesCountString.join(' | ');
+                footerString.html(likesCountString);
+                // Update the element ID
+                button.attr('id', 'like-peep-' + peepId);
+                // Update the tooltip
+                button.attr('data-original-title', 'Like Peep');
+                button.tooltip('show');
+            },
+            error: function(data) {
+                console.log(data);
+            }
+        });
+    }
+</script>
