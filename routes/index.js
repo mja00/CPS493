@@ -23,7 +23,7 @@ router.get('/', async function (req, res, next) {
         res.render('index', {
             title: 'Home',
             peeps: peeps,
-            likes: likes,
+            likes: likes
         });
     });
 });

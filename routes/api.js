@@ -196,6 +196,15 @@ router.get('/peep/:id/replies', async function(req, res, next) {
     });
 });
 
+router.get('/peep/:id/replies/:limit', async function(req, res, next) {
+    const peepID = req.params.id;
+    const limit = req.params.limit;
+    let replies = await db.getMostRecentRepliesForPeep(peepID, limit);
+    res.json({
+        replies: replies
+    });
+});
+
 router.get('/reply/:id', async function(req, res, next) {
     const replyID = req.params.id;
     db.getReplyByID(replyID).then(function(reply) {
@@ -216,7 +225,7 @@ router.post('/peep/:id/reply', async function(req, res, next) {
         const userID = req.session.user.id;
         const peepID = req.params.id;
         const reply = req.body.reply;
-        db.addReply(userID, peepID, reply).then(function() {
+        db.addReply(peepID, userID, reply).then(function() {
             res.json({
                 message: 'Reply added successfully'
             });

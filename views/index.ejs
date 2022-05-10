@@ -58,6 +58,20 @@
                                 <%= peep.message %>
                             </div>
                         </div>
+                        <% if (peep.replies.length > 0) {%>
+                            <hr class="m-0">
+                            <div class="card-body">
+                                <p>Recent Replies</p>
+                                <% peep.replies.forEach(reply => {%>
+                                    <div class="card mb-3 bg-secondary text-white">
+                                        <div class="card-body">
+                                            <%= reply.message %><br>
+                                            <small><%= reply.author.username %></small>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        <% } %>
                         <div class="card-footer">
                             <small class="text-muted">Written <%= peep.getTimeDifference(); %> | <%= peep.likesCount%> likes</small>
                             <div class="btn-group float-right" role="group" aria-label="Basic example">
@@ -167,12 +181,8 @@
                     reply: replyText
                 },
                 success: function(data) {
-                    console.log(data);
-                    // Close the modal
-                    $('#newReplyModal').modal('hide');
-                    // Clear the reply text
-                    $('#newReplyModal #reply').val('');
-
+                    // Reload the page
+                    location.reload();
                 },
                 error: function(data) {
                     console.log(data);

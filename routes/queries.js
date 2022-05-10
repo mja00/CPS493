@@ -313,6 +313,18 @@ class Peep {
         return likes.length;
     }
 
+    getReplies = async () => {
+        return await getRepliesForPeep(this.id);
+    }
+
+    getRepliesCount = async () => {
+        let replies = await this.getReplies();
+        return replies.length;
+    }
+
+    getMostRecentReplies = async (limit) => {
+        return await getMostRecentRepliesForPeep(this.id, limit);
+    }
 
     getAuthor = async () => {
         let user = await getUserByID(this.userID);
@@ -354,6 +366,7 @@ const getAllPeepsForDisplay = async () => {
         let peep = new Peep(row.user_id, row.message, row.created_at, row.id);
         peep.author = await peep.getAuthor();
         peep.likesCount = await peep.getLikesCount();
+        peep.replies = await peep.getMostRecentReplies(3);
         peeps.push(peep);
     }
     return peeps;
@@ -422,15 +435,19 @@ class Like {
     getId() {
         return this.id;
     }
+
     getPeepId() {
         return this.peep_id;
     }
+
     getUserId() {
         return this.user_id;
     }
+
     getPeep() {
         return getPeepByID(this.peep_id);
     }
+
     getLiker() {
         return getUserByID(this.user_id);
     }
@@ -439,9 +456,11 @@ class Like {
     setId(id) {
         this.id = id;
     }
+
     setPeepId(peep_id) {
         this.peep_id = peep_id;
     }
+
     setUserId(user_id) {
         this.user_id = user_id;
     }
@@ -508,22 +527,22 @@ const getLikesForPeep = async (peep_id) => {
 const hasUserLikedPeep = async (user_id, peep_id) => {
     return new Promise((resolve, reject) => {
         pool.query('SELECT * FROM likes WHERE user_id = $1 AND peep_id = $2', [user_id, peep_id], (error, results) => {
-           if (error) {
-               reject(error)
-           }
-           resolve(results.rowCount > 0);
+            if (error) {
+                reject(error)
+            }
+            resolve(results.rowCount > 0);
         });
     });
 }
 
 const deleteLikeByUserForPeep = async (user_id, peep_id) => {
     return new Promise((resolve, reject) => {
-       pool.query('DELETE FROM likes WHERE user_id = $1 AND peep_id = $2', [user_id, peep_id], (error, results) => {
-           if (error) {
-               reject(error)
-           }
-           resolve(results);
-       });
+        pool.query('DELETE FROM likes WHERE user_id = $1 AND peep_id = $2', [user_id, peep_id], (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            resolve(results);
+        });
     });
 }
 
@@ -547,6 +566,15 @@ class Reply {
     setPeepId = (peep_id) => this.peep_id = peep_id;
     setUserId = (user_id) => this.user_id = user_id;
     setMessage = (message) => this.message = message;
+
+    getAuthor = async () => {
+        return await getUserByID(this.user_id);
+    }
+
+    getAuthorAsJson = async () => {
+        const author = await getUserByID(this.user_id);
+        return author.getAsJSON();
+    }
 }
 
 const getReplyByID = async (id) => {
@@ -557,8 +585,11 @@ const getReplyByID = async (id) => {
             }
             // Check to see if the reply exists
             if (results.rowCount > 0) {
-                // Resolve the reply object
-                resolve(results.rows[0]);
+                // Convert the results to a reply object
+                let resultObj = results.rows[0];
+                let reply = new Reply(resultObj.id, resultObj.peep_id, resultObj.user_id, resultObj.message);
+                resolve(reply);
+
             } else {
                 // Reject the promise
                 reject("No reply found");
@@ -575,6 +606,30 @@ const getRepliesForPeep = async (peep_id) => {
             }
             resolve(results.rows);
         });
+    });
+}
+
+const getMostRecentRepliesForPeep = async (peep_id, limit) => {
+    return new Promise((resolve, reject) => {
+       pool.query('SELECT * FROM replies WHERE peep_id = $1 ORDER BY id DESC LIMIT $2', [peep_id, limit], (error, results) => {
+           if (error) {
+               reject(error)
+           }
+           // Convert the replies to a reply object
+           // Check if rows is empty and resolve an empty array if it is
+           if (results.rowCount > 0) {
+               let replies = [];
+               results.rows.forEach(async (row) => {
+                   let reply = new Reply(row.id, row.peep_id, row.user_id, row.message);
+                   let author = await getUserByID(reply.getUserId());
+                   reply.author = author.getAsJSON();
+                   replies.push(reply);
+               })
+               resolve(replies);
+           } else {
+               resolve([]);
+           }
+       });
     });
 }
 
@@ -628,5 +683,6 @@ module.exports = {
     getRepliesForPeep,
     addReply,
     getReplyByID,
-    deleteReplyByID
+    deleteReplyByID,
+    getMostRecentRepliesForPeep
 }
