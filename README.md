@@ -108,6 +108,11 @@ This table contains all the users that have registered with Peeper.
 | lastname  | varchar(255) | User's last name  |
 | birthdate | varchar(255) | User's birthdate  |
 
+#### Business Rules
+A User may Like many Peeps but not the same Peep twice.  
+A User may Reply to many Peeps.  
+A User may post many Peeps.  
+
 ### Peep Table
 
 This table contains all the Peeps that have been posted.
@@ -119,6 +124,11 @@ This table contains all the Peeps that have been posted.
 | message    | text      | The message in the Peep         |
 | created_at | timestamp | The time the Peep was created   |
 | updated_at | timestamp | The time the Peep was updated   |
+
+#### Business Rules
+A Peep may be liked by many Users.  
+A Peep may be replied to by many Users.  
+A Peep must be posted by a User.  
 
 ### Reply Table
 
@@ -132,6 +142,10 @@ With one row being a single reply to a single Peep.
 | user_id    | integer | Foreign Key                     |
 | message    | text    | The message in the reply        |
 
+#### Business Rules
+A Reply must be posted by a User.  
+A Reply must be posted to a Peep.  
+
 ### Like Table
 
 This table contains all the likes to Peeps. This is a one-to-many relationship.
@@ -142,9 +156,117 @@ With one row being a single like to a single Peep.
 | id         | integer      | Primary Key                     |
 | peep_id    | integer      | Foreign Key                     |
 | user_id    | integer      | Foreign Key                     |
+
+#### Business Rules
+A Like must be created by a User.  
+A Like must belong to a Peep.  
  
 
 ## Installation
+
+These instructions will install Peeper on your machine. Some instructions will be specific to your operating system.
+
+### General Dependencies
+- [Node.js](https://nodejs.org/) (Required) - Backend server
+- [npm](https://www.npmjs.com/) (Required) - Package manager
+- [PostgreSQL](https://www.postgresql.org/) (Required) - Database
+- [git](https://git-scm.com/) (Required) - Version control
+
+### Cloning
+To clone the Peeper repository, run the following command in your terminal:
+```sh
+git clone https://github.com/mja00/CPS493.git
+# or if you prefer to use SSH
+# git clone git@github.com:mja00/CPS493.git
+```
+
+**Note:** If you're using WSL2, clone this repo in your home directory. Mounted drives
+in WSL2 have degraded performance.
+
+### MacOS Installation
+Installation is simple with [Homebrew](https://brew.sh/). First, we need to install node and npm.
+
+```sh
+brew install node
+brew install npm
+# Verify that node and npm are installed
+node -v
+npm -v
+```
+
+Then, we can install our dependencies.
+```sh
+# Graphical Postgres, if you do not want a graphical Postgres, you are on your own!
+brew install --cask postgres-unofficial
+# Then install the node dependencies
+npm install
+```
+
+Afterwards you'll need to launcher Postgres.app and create a new database. By default we look for
+`web-dev-project` and the username and password are `postgres`.
+
+### Ubuntu Installation
+Installation is simple with [apt](https://www.apt-get.com/). First, we need to install node and npm.
+
+```sh
+sudo apt-get install nodejs npm
+```
+
+Then, we can install our dependencies.
+
+```sh
+# Install Postgres
+sudo apt-get install postgresql postgresql-contrib
+sudo systemctl start postgresql.service
+# Then install the node dependencies
+npm install
+```
+#### Configuring Postgres
+
+After the installation, you'll most likely need to start Postgres.
+```sh
+sudo pg_ctlcluster 12 main start
+```
+
+We then need to setup users and databases.
+Login to Postgres as the default user with the following command:
+```sh
+sudo -u postgres psql
+```
+When presented with the `postgres=#` prompt, you can run the following commands, with `postgres`
+as the password.
+```sh
+postgres=# \password postgres
+Enter new password:
+Enter it again:
+\quit
+```
+Then create your database.
+
+### Configuring Peeper
+The settings for the database are located in the `routes/queries.js` file.
+Edit any of the `db` consts near the top to match your database settings.
+These are the default settings:
+```js
+const dbUser = 'postgres'
+const dbPassword = 'postgres'
+const dbHost = 'localhost'
+const dbPort = 5432
+const dbName = 'web-dev-project'
+```
+
+### Running Peeper
+To run Peeper, run either of the following commands in your terminal:
+```sh
+# For development
+npm run dev
+# For production
+npm run start
+```
+
+Navigate to [localhost:3000](http://localhost:3000/) in your browser.
+Upon the first loading of the index it will initalize the database.
+You're ready to Peep!
 
 ## Screenshots
 
