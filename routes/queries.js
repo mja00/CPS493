@@ -1,12 +1,74 @@
 const Pool = require('pg').Pool
 
+/*
+*
+* Below are the DB Settings for the Postgresql Database.
+* Make sure to set these to your own DB settings.
+*
+* */
+
+const dbUser = 'postgres'
+const dbPassword = 'postgres'
+const dbHost = 'localhost'
+const dbPort = 5432
+const dbName = 'web-dev-test'
+
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'web-dev-project',
-    password: 'postgres',
-    port: 5432,
+    user: dbUser,
+    host: dbHost,
+    database: dbName,
+    password: dbPassword,
+    port: dbPort,
 })
+
+const checkIfDbSetup = async () => {
+    // Try to select from the users table to check if the database is setup
+    const query = 'SELECT * FROM users'
+    pool.query(query, (err, res) => {
+        if (err) {
+            console.log('Database is not setup yet')
+            setUpDb();
+        }
+        console.log('Database is setup')
+    });
+}
+
+const setUpDb = async () => {
+    const client = await pool.connect()
+    // Create tables
+    // Create users table
+    await client.query(`
+        CREATE TABLE IF NOT EXISTS users (
+          id SERIAL NOT NULL PRIMARY KEY,
+          username VARCHAR(255) NOT NULL,
+          password VARCHAR(255) NOT NULL,
+          firstname VARCHAR(255) NOT NULL,
+          lastname VARCHAR(255) NOT NULL,
+          birthdate VARCHAR(255) NOT NULL
+        );
+    `)
+
+    // Create peeps table
+    await client.query(`
+        CREATE TABLE IF NOT EXISTS peeps (
+            id SERIAL NOT NULL PRIMARY KEY,
+            user_id integer NOT NULL,
+            message text NOT NULL,
+            created_at timestamp without time zone DEFAULT now()
+        );
+    `)
+    // Create likes table
+    await client.query(`
+        CREATE TABLE IF NOT EXISTS likes (
+            id SERIAL NOT NULL PRIMARY KEY,
+            peep_id integer NOT NULL,
+            user_id integer
+        );
+    `)
+
+    // Return the client to the pool
+    client.release();
+}
 
 // Our user class
 class User {
@@ -476,5 +538,7 @@ module.exports = {
     deleteLikeByID,
     getLikeByID,
     hasUserLikedPeep,
-    deleteLikeByUserForPeep
+    deleteLikeByUserForPeep,
+    setUpDb,
+    checkIfDbSetup
 }
