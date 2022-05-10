@@ -57,16 +57,12 @@ Peeper will have the following features in the immediate future:
 - Peeps with a link
 - Peeps with a video
 
----
-
 ## Current Bugs and Issues
 
 - There is no security whatsoever.
 - There is no front-end way to delete Peeps or replies.
 - There is no way to edit Peeps or replies.
 - Every so often the database will fail to return anything.
-
----
 
 ## Technologies Used
 
@@ -94,8 +90,6 @@ Peeper will have the following features in the immediate future:
 - [Chrome DevTools](https://www.google.com/chrome/devtools/)
 - [pgAdmin 4](https://www.pgadmin.org/)
 - [GitHub](https://www.github.com)
-
----
 
 ## ERD Diagram
 
@@ -148,14 +142,9 @@ With one row being a single like to a single Peep.
 | id         | integer      | Primary Key                     |
 | peep_id    | integer      | Foreign Key                     |
 | user_id    | integer      | Foreign Key                     |
-
---- 
+ 
 
 ## Installation
-
-
-
----
 
 ## Screenshots
 
